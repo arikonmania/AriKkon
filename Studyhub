@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="毎日の学習時間と課題を記録できるスタディダッシュボード">
+  <title>Study Focus</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-soft: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --cyan: #06b6d4;
+      --orange: #f97316;
+      --green: #10b981;
+      --red: #ef4444;
+      --shadow: 0 18px 50px rgba(37, 99, 235, .12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      line-height: 1.5;
+    }
+    button, input, select { font: inherit; font-size: 16px; }
+    button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    input, select { max-width: 100%; }
+    img, svg, canvas { max-width: 100%; }
+    body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(37, 99, 235, .22);
+      outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding-top: env(safe-area-inset-top);
+      border-bottom: 1px solid rgba(226, 232, 240, .85);
+      background: rgba(255, 255, 255, .9);
+      backdrop-filter: blur(14px);
+    }
+    .header-inner, .main, .footer {
+      width: min(1440px, calc(100% - 40px));
+      margin-inline: auto;
+    }
+    .header-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 42px; height: 42px;
+      border-radius: 15px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      color: #fff; font-size: 22px;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, .25);
+    }
+    .hidden-hint-trigger { border: 0; padding: 0; font: inherit; }
+    .hidden-hint-trigger:focus-visible { outline: 3px solid rgba(37, 99, 235, .22); outline-offset: 2px; }
+    .brand-name { margin: 0; font-weight: 850; letter-spacing: -.02em; }
+    .brand-copy { margin: 1px 0 0; color: var(--muted); font-size: 12px; }
+
+    .button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 750;
+      transition: transform .16s ease, background .16s ease, opacity .16s ease;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button:active { transform: translateY(0); }
+    .button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+    .button-primary { background: var(--primary); color: #fff; }
+    .button-primary:hover { background: var(--primary-dark); }
+    .button-secondary { border: 1px solid var(--line); background: #fff; color: var(--text); }
+    .button-success { border: 1px solid #a7f3d0; background: #ecfdf5; color: #047857; }
+    .button-ghost { background: transparent; color: var(--muted); }
+    .button-icon { width: 44px; padding: 0; }
+
+    .main { padding-block: 28px 42px; }
+    .stack { display: grid; gap: 22px; }
+    .hero {
+      overflow: hidden;
+      padding: clamp(24px, 5vw, 44px);
+      border-radius: 32px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(255,255,255,.22), transparent 28%),
+        linear-gradient(135deg, #1d4ed8, #2563eb 55%, #06b6d4);
+      box-shadow: var(--shadow);
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.35fr .65fr; align-items: center; gap: 28px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.16); font-size: 14px;
+    }
+    .hero h1 { margin: 16px 0 8px; font-size: clamp(30px, 5vw, 48px); line-height: 1.12; letter-spacing: -.04em; }
+    .hero p { margin: 0; color: #dbeafe; }
+    .progress-track { height: 12px; margin-top: 24px; border-radius: 999px; background: rgba(255,255,255,.2); overflow: hidden; }
+    .progress-bar { height: 100%; width: 0; border-radius: inherit; background: #fff; transition: width .55s ease; }
+    .progress-meta { margin-top: 8px; display: flex; justify-content: space-between; gap: 12px; color: #dbeafe; font-size: 13px; }
+    .progress-ring {
+      width: 164px; aspect-ratio: 1; margin: auto;
+      border: 12px solid rgba(255,255,255,.2); border-radius: 50%;
+      display: grid; place-items: center; background: rgba(255,255,255,.1);
+    }
+    .progress-ring strong { display: block; text-align: center; font-size: 38px; line-height: 1; }
+    .progress-ring span { display: block; margin-top: 7px; text-align: center; color: #dbeafe; font-size: 12px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 4px 16px rgba(15,23,42,.04); }
+    .stat { padding: 20px; display: flex; align-items: center; gap: 14px; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; font-size: 22px; }
+    .blue { color: var(--primary); background: #eff6ff; }
+    .orange { color: var(--orange); background: #fff7ed; }
+    .green { color: var(--green); background: #ecfdf5; }
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-value { margin-top: 2px; font-size: 21px; font-weight: 850; }
+
+    .two-column { display: grid; grid-template-columns: minmax(360px, .9fr) minmax(460px, 1.1fr); gap: 22px; }
+    .panel { padding: 22px; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .panel h2 { margin: 0; font-size: 19px; letter-spacing: -.02em; }
+    .panel-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+    .subject-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .subject-button { min-height: 43px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--muted); font-weight: 700; }
+    .subject-button.active { border-color: var(--primary); background: var(--primary); color: #fff; box-shadow: 0 8px 18px rgba(37,99,235,.18); }
+    .timer { padding: 27px 0; text-align: center; }
+    .timer-subject { color: var(--primary); font-size: 13px; font-weight: 800; }
+    .timer-display { margin-top: 5px; font: 850 clamp(42px, 7vw, 62px)/1.1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+    .timer-actions { display: grid; grid-template-columns: 1fr 48px 48px; gap: 8px; }
+
+    .chart-wrap { height: 280px; overflow-x: auto; }
+    .bar-chart { height: 100%; min-width: 520px; display: grid; grid-template-columns: repeat(7, 1fr); align-items: end; gap: 12px; padding: 14px 8px 24px; border-bottom: 1px solid var(--line); }
+    .bar-item { height: 100%; display: grid; grid-template-rows: 1fr auto; gap: 8px; align-items: end; text-align: center; color: var(--muted); font-size: 12px; }
+    .bar-box { height: 100%; display: flex; align-items: end; justify-content: center; }
+    .bar { width: min(44px, 80%); min-height: 3px; border-radius: 9px 9px 3px 3px; background: linear-gradient(180deg, #3b82f6, #2563eb); transition: height .45s ease; position: relative; }
+    .bar:hover::before { content: attr(data-value); position: absolute; left: 50%; top: -32px; transform: translateX(-50%); padding: 4px 7px; border-radius: 7px; background: var(--text); color: #fff; white-space: nowrap; }
+
+    .task-form { display: flex; gap: 8px; margin-bottom: 14px; }
+    .input { width: 100%; min-height: 46px; border: 1px solid var(--line); border-radius: 13px; background: #fff; color: var(--text); padding: 10px 14px; }
+    .input:focus { border-color: var(--primary); }
+    .task-list { display: grid; gap: 8px; max-height: 320px; overflow: auto; overscroll-behavior: contain; }
+    .task { display: flex; align-items: center; gap: 11px; padding: 11px; border-radius: 15px; background: var(--surface-soft); }
+    .check { flex: 0 0 auto; width: 28px; height: 28px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: transparent; }
+    .task.done .check { border-color: var(--green); background: var(--green); color: #fff; }
+    .task-title { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+    .task.done .task-title { color: #94a3b8; text-decoration: line-through; }
+    .delete { border: 0; border-radius: 9px; background: transparent; color: #94a3b8; width: 36px; height: 36px; }
+    .delete:hover { background: #fef2f2; color: var(--red); }
+    .empty { padding: 30px; border: 1px dashed var(--line); border-radius: 15px; color: #94a3b8; text-align: center; font-size: 13px; }
+
+    .goal { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .goal-control { display: flex; align-items: center; gap: 13px; min-width: min(100%, 340px); }
+    .goal-control input { flex: 1; accent-color: var(--primary); }
+    .goal-value { min-width: 100px; padding: 9px; border-radius: 12px; background: var(--surface-soft); text-align: center; font-size: 13px; font-weight: 800; }
+
+    .history-list { display: grid; gap: 8px; max-height: 360px; overflow: auto; }
+    .history-row { display: grid; grid-template-columns: 92px 1fr auto auto; align-items: center; gap: 12px; padding: 12px; border-radius: 15px; background: var(--surface-soft); }
+    .history-date { color: var(--muted); font-size: 12px; }
+    .history-subject { font-weight: 800; }
+    .history-duration { font-variant-numeric: tabular-nums; font-weight: 800; }
+    .tools { display: flex; flex-wrap: wrap; gap: 9px; }
+    .manual-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    .field { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .field select { min-height: 46px; border: 1px solid var(--line); border-radius: 13px; background: #fff; padding: 8px 12px; color: var(--text); }
+    .mobile-nav { display: none; }
+    .footer { padding-bottom: calc(28px + env(safe-area-inset-bottom)); color: #94a3b8; text-align: center; font-size: 12px; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(15,23,42,.5); backdrop-filter: blur(5px); }
+    .modal { width: min(100%, 390px); padding: 24px; border-radius: 26px; background: #fff; box-shadow: 0 30px 80px rgba(15,23,42,.28); }
+    .modal-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .lock { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: #eff6ff; color: var(--primary); font-size: 22px; }
+    .modal h2 { margin: 18px 0 3px; font-size: 22px; }
+    .modal p { margin: 0; color: var(--muted); font-size: 13px; }
+    .modal-form { display: grid; gap: 10px; margin-top: 18px; }
+    .error { min-height: 19px; color: var(--red); font-size: 13px; font-weight: 700; }
+    .notice { margin-top: 12px; padding: 12px; border-radius: 14px; background: #fffbeb; color: #92400e; font-size: 12px; }
+    .toast { position: fixed; z-index: 70; left: 50%; bottom: 20px; transform: translate(-50%, 12px); max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 14px; background: var(--text); color: #fff; box-shadow: 0 14px 35px rgba(15,23,42,.24); font-size: 13px; opacity: 0; pointer-events: none; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .hidden-hint-overlay { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(15,23,42,.58); backdrop-filter: blur(8px); opacity: 0; visibility: hidden; pointer-events: none; transition: .2s ease; }
+    .hidden-hint-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    .hidden-hint-card { width: min(100%, 440px); padding: 30px; border-radius: 28px; background: #fff; color: var(--text); text-align: center; box-shadow: 0 30px 90px rgba(15,23,42,.36); transform: translateY(14px) scale(.97); transition: transform .22s ease; }
+    .hidden-hint-overlay.show .hidden-hint-card { transform: translateY(0) scale(1); }
+    .hidden-hint-icon { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 20px; display: grid; place-items: center; background: #eff6ff; font-size: 30px; }
+    .hidden-hint-card h2 { margin: 0; font-size: 24px; }
+    .hidden-hint-main { margin: 16px 0 8px; padding: 17px; border-radius: 18px; background: #eff6ff; color: #1d4ed8; font-size: clamp(25px,6vw,32px); font-weight: 900; letter-spacing: .04em; }
+    .hidden-hint-card p { margin: 0; color: var(--muted); font-size: 14px; }
+    .hidden-hint-close { width: 100%; margin-top: 20px; }
+
+    .private-view { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #0f172a; color: #fff; }
+    .private-card { width: min(680px, 100%); padding: clamp(24px, 5vw, 44px); border: 1px solid #334155; border-radius: 30px; background: #1e293b; text-align: center; box-shadow: 0 25px 80px rgba(0,0,0,.3); }
+    .private-card h1 { margin: 16px 0 8px; font-size: clamp(28px, 5vw, 44px); }
+    .private-card p { color: #cbd5e1; }
+
+    @media (min-width: 1180px) {
+      .main { padding-block: 32px 48px; }
+      .panel { padding: 26px; }
+      .subject-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+    @media (max-width: 1100px) {
+      .two-column { grid-template-columns: 1fr; }
+      .subject-grid { grid-template-columns: repeat(6, 1fr); }
+      .chart-wrap { height: 300px; }
+    }
+    @media (max-width: 820px) {
+      .header-inner, .main, .footer { width: min(100% - 28px, 1440px); }
+      .hero-grid { grid-template-columns: 1fr .42fr; }
+      .hero { padding: 28px; }
+      .progress-ring { width: 126px; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .stat { padding: 16px; align-items: flex-start; }
+      .stat-icon { width: 42px; height: 42px; }
+      .stat-value { font-size: 18px; }
+      .manual-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 620px) {
+      body { padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
+      .header-inner, .main, .footer { width: min(100% - 20px, 1440px); }
+      .header-inner { min-height: 58px; }
+      .brand-mark { width: 38px; height: 38px; border-radius: 13px; font-size: 19px; }
+      .brand-copy { display: none; }
+      .header .button { min-height: 42px; padding-inline: 10px; font-size: 13px; }
+      .main { padding-block: 16px 24px; gap: 15px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 20px; }
+      .hero h1 { margin-top: 13px; font-size: clamp(27px, 9vw, 38px); }
+      .hero p { font-size: 14px; }
+      .progress-ring { width: 116px; border-width: 9px; }
+      .progress-ring strong { font-size: 30px; }
+      .stats { grid-template-columns: 1fr; gap: 9px; }
+      .stat { padding: 13px 15px; align-items: center; }
+      .stat-icon { width: 42px; height: 42px; }
+      .stat-value { font-size: 18px; }
+      .panel { padding: 16px; border-radius: 20px; }
+      .panel-head { margin-bottom: 15px; }
+      .subject-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+      .subject-button { min-height: 46px; padding-inline: 5px; font-size: 14px; }
+      .timer { padding: 23px 0; }
+      .timer-display { font-size: clamp(37px, 12vw, 50px); }
+      .timer-actions { grid-template-columns: minmax(0, 1fr) 48px 48px; }
+      .button { min-height: 46px; }
+      .hero { border-radius: 23px; padding: 21px; }
+      .task-form { align-items: stretch; }
+      .task-form .button { padding-inline: 13px; }
+      .goal { align-items: stretch; flex-direction: column; gap: 16px; }
+      .goal-control { min-width: 0; width: 100%; }
+      .goal-control input { min-width: 0; }
+      .manual-grid { grid-template-columns: 1fr; }
+      .history-row { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 8px; padding: 10px; }
+      .history-row .delete { grid-column: 3; }
+      .history-subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .chart-wrap { height: 250px; margin-inline: -6px; }
+      .bar-chart { min-width: 500px; gap: 8px; }
+      .tools { display: grid; grid-template-columns: 1fr; }
+      .tools .button { width: 100%; }
+      .modal-backdrop { align-items: end; padding: 0; }
+      .modal { width: 100%; max-width: none; border-radius: 25px 25px 0 0; padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); }
+      .mobile-nav {
+        position: fixed; left: 10px; right: 10px; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 40;
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;
+        padding: 7px; border: 1px solid rgba(226,232,240,.9); border-radius: 20px;
+        background: rgba(255,255,255,.94); backdrop-filter: blur(16px); box-shadow: 0 10px 35px rgba(15,23,42,.16);
+      }
+      .mobile-nav button { min-width: 0; min-height: 49px; border: 0; border-radius: 14px; background: transparent; color: var(--muted); display: grid; place-items: center; gap: 1px; font-size: 10px; font-weight: 750; }
+      .mobile-nav button span { font-size: 19px; line-height: 1; }
+      .mobile-nav button:active { background: #eff6ff; color: var(--primary); }
+      .hidden-hint-overlay { padding: 16px; }
+      .hidden-hint-card { padding: 25px 18px; border-radius: 24px; }
+      .hidden-hint-card h2 { font-size: 21px; }
+      .hidden-hint-main { font-size: 25px; }
+      .footer { padding-bottom: 10px; }
+    }
+    @media (max-width: 370px) {
+      .header-inner, .main, .footer { width: min(100% - 14px, 1440px); }
+      .brand-name { font-size: 14px; }
+      .header .button { padding-inline: 7px; }
+      .hero { padding: 18px; }
+      .eyebrow { font-size: 12px; }
+      .panel { padding: 14px; }
+      .subject-button { font-size: 13px; }
+      .timer-display { font-size: 35px; }
+      .timer-actions { grid-template-columns: minmax(0, 1fr) 46px 46px; }
+      .task-form { display: grid; grid-template-columns: 1fr; }
+      .history-row { grid-template-columns: 1fr auto; }
+      .history-date { grid-column: 1; }
+      .history-subject { grid-column: 1; }
+      .history-duration { grid-column: 2; grid-row: 1 / span 2; }
+      .history-row .delete { grid-column: 2; grid-row: 3; }
+    }
+    @media (orientation: landscape) and (max-height: 500px) and (max-width: 950px) {
+      .header { position: static; }
+      .hero-grid { grid-template-columns: 1fr .35fr; }
+      .progress-ring { width: 104px; }
+      .modal { max-height: 94vh; overflow: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="studyView">
+    <header class="header">
+      <div class="header-inner">
+        <div class="brand">
+          <button id="hiddenHintTrigger" class="brand-mark hidden-hint-trigger" type="button" aria-label="Study Focus ホーム">📘</button>
+          <div>
+            <p class="brand-name">Study Focus</p>
+            <p class="brand-copy">毎日の積み重ねを見える化</p>
+          </div>
+        </div>
+        <button id="adminOpenButton" class="button button-ghost" type="button" aria-haspopup="dialog">⚙ 管理者</button>
+      </div>
+    </header>
+
+    <main class="main stack">
+      <section id="homeSection" class="hero" aria-labelledby="heroTitle">
+        <div class="hero-grid">
+          <div>
+            <span class="eyebrow">✨ 今日も少しずつ進めよう</span>
+            <h1 id="heroTitle">今日の学習は <span id="todayHero">0分</span></h1>
+            <p>目標まであと <span id="remainingTime">2時間</span>。短い時間でも記録すれば成長が見えてきます。</p>
+            <div class="progress-track" role="progressbar" aria-label="今日の目標達成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div class="progress-meta"><span id="progressText">0% 達成</span><span>目標 <b id="goalHero">2時間</b></span></div>
+          </div>
+          <div class="progress-ring"><div><strong id="progressRing">0%</strong><span>TODAY</span></div></div>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="学習概要">
+        <article class="card stat"><div class="stat-icon blue">⏱</div><div><div class="stat-label">今日の勉強</div><div id="todayStat" class="stat-value">0分</div></div></article>
+        <article class="card stat"><div class="stat-icon orange">📊</div><div><div class="stat-label">今週の合計</div><div id="weekStat" class="stat-value">0分</div></div></article>
+        <article class="card stat"><div class="stat-icon green">✓</div><div><div class="stat-label">完了した課題</div><div id="taskStat" class="stat-value">0 / 0</div></div></article>
+      </section>
+
+      <section class="two-column">
+        <article id="timerSection" class="card panel">
+          <div class="panel-head"><div><h2>集中タイマー</h2><p class="panel-subtitle">科目を選んで勉強を記録</p></div><span aria-hidden="true">⏱</span></div>
+          <div id="subjectGrid" class="subject-grid" aria-label="科目選択"></div>
+          <div class="timer"><div id="timerSubject" class="timer-subject">数学</div><div id="timerDisplay" class="timer-display">00:00:00</div></div>
+          <div class="timer-actions">
+            <button id="timerToggle" class="button button-primary" type="button">▶ スタート</button>
+            <button id="timerReset" class="button button-secondary button-icon" type="button" aria-label="タイマーをリセット">↺</button>
+            <button id="timerSave" class="button button-success button-icon" type="button" aria-label="学習記録を保存">✓</button>
+          </div>
+        </article>
+
+        <article class="card panel">
+          <div class="panel-head"><div><h2>7日間の学習時間</h2><p class="panel-subtitle">毎日の勉強時間を分単位で表示</p></div></div>
+          <div class="chart-wrap"><div id="weekChart" class="bar-chart" aria-label="過去7日間の学習グラフ"></div></div>
+        </article>
+      </section>
+
+      <section class="two-column">
+        <article class="card panel">
+          <div class="panel-head"><div><h2>今日の科目バランス</h2><p class="panel-subtitle">科目ごとの記録を一覧で確認</p></div></div>
+          <div id="subjectSummary" class="task-list"></div>
+        </article>
+
+        <article class="card panel">
+          <div class="panel-head"><div><h2>今日の課題</h2><p class="panel-subtitle">終わった課題をチェック</p></div><b id="completedBadge" class="panel-subtitle">0 完了</b></div>
+          <form id="taskForm" class="task-form">
+            <input id="taskInput" class="input" maxlength="80" placeholder="課題を追加" aria-label="追加する課題">
+            <button class="button button-primary" type="submit">＋ 追加</button>
+          </form>
+          <div id="taskList" class="task-list"></div>
+        </article>
+      </section>
+
+
+      <section id="recordSection" class="card panel">
+        <div class="panel-head"><div><h2>学習時間を手動で追加</h2><p class="panel-subtitle">タイマーを使わなかった分も正確に記録できます</p></div></div>
+        <form id="manualForm" class="manual-grid">
+          <label class="field">日付<input id="manualDate" class="input" type="date" required></label>
+          <label class="field">科目<select id="manualSubject" aria-label="手動記録の科目"></select></label>
+          <label class="field">勉強時間（分）<input id="manualMinutes" class="input" type="number" min="1" max="1440" step="1" value="30" required></label>
+          <button class="button button-primary" type="submit">記録を追加</button>
+        </form>
+      </section>
+
+      <section class="two-column">
+        <article id="historySection" class="card panel">
+          <div class="panel-head"><div><h2>最近の学習履歴</h2><p class="panel-subtitle">記録内容を確認し、間違いは削除できます</p></div></div>
+          <div id="historyList" class="history-list"></div>
+        </article>
+        <article class="card panel">
+          <div class="panel-head"><div><h2>データ管理</h2><p class="panel-subtitle">端末変更や万一に備えてバックアップ</p></div></div>
+          <div class="tools">
+            <button id="exportButton" class="button button-primary" type="button">バックアップ保存</button>
+            <button id="importButton" class="button button-secondary" type="button">バックアップ読込</button>
+            <input id="importFile" type="file" accept="application/json,.json" hidden>
+            <button id="clearButton" class="button button-secondary" type="button">全データ初期化</button>
+          </div>
+          <div class="notice">記録はこの端末のブラウザに保存されます。定期的にバックアップを保存してください。</div>
+        </article>
+      </section>
+      <section class="card panel goal">
+        <div><h2>1日の目標時間</h2><p class="panel-subtitle">無理なく続けられる目標に調整できます</p></div>
+        <div class="goal-control"><input id="goalRange" type="range" min="15" max="360" step="15" value="120" aria-label="1日の目標時間"><span id="goalValue" class="goal-value">2時間</span></div>
+      </section>
+    </main>
+    <footer class="footer">Study Focus v1.7 · 記録はこのブラウザ内に保存されます</footer>
+  </div>
+
+  <nav class="mobile-nav" aria-label="スマートフォン用メニュー">
+    <button type="button" data-target="homeSection"><span>⌂</span>ホーム</button>
+    <button type="button" data-target="timerSection"><span>⏱</span>タイマー</button>
+    <button type="button" data-target="recordSection"><span>＋</span>記録</button>
+    <button type="button" data-target="historySection"><span>▤</span>履歴</button>
+  </nav>
+
+  <section id="privateView" class="private-view" hidden>
+    <div class="private-card">
+      <div class="lock" style="margin:auto">🔐</div>
+      <h1>専用ページ</h1>
+      <p>認証に成功しました。ここを本来表示したい内容へ置き換えられます。</p>
+      <button id="privateBackButton" class="button button-secondary" type="button">勉強画面へ戻る</button>
+    </div>
+  </section>
+
+  <div id="adminModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
+    <div class="modal">
+      <div class="modal-top"><div class="lock">🔑</div><button id="adminCloseButton" class="button button-ghost button-icon" type="button" aria-label="閉じる">×</button></div>
+      <h2 id="adminTitle">管理者認証</h2>
+      <p>パスワードを入力してください</p>
+      <form id="adminForm" class="modal-form">
+        <input id="adminPassword" class="input" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="パスワード" required>
+        <div id="adminError" class="error" role="alert"></div>
+        <button id="adminSubmit" class="button button-primary" type="submit">専用ページへ進む</button>
+      </form>
+      
+    </div>
+  </div>
+
+  <div id="hiddenHintOverlay" class="hidden-hint-overlay" role="dialog" aria-modal="true" aria-labelledby="hiddenHintTitle" hidden>
+    <div class="hidden-hint-card">
+      <div class="hidden-hint-icon" aria-hidden="true">💡</div>
+      <h2 id="hiddenHintTitle">パスワードのヒント</h2>
+      <div class="hidden-hint-main">月2桁 ＋ 日2桁</div>
+      <p>月と日をそれぞれ2桁で続けて入力</p>
+      <p style="margin-top:8px;font-weight:700;color:#475569">確認したら下のボタンで閉じてください</p>
+      <button id="hiddenHintClose" class="button button-primary hidden-hint-close" type="button">閉じる</button>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    const CONFIG = Object.freeze({
+      storageKey: "study-focus-html-v1",
+      timerKey: "study-focus-active-timer-v1",
+      destinationUrl: ""
+    });
+
+    const SUBJECTS = Object.freeze([
+      { name: "数学", color: "#2563eb" }, { name: "英語", color: "#f97316" },
+      { name: "国語", color: "#8b5cf6" }, { name: "理科", color: "#10b981" },
+      { name: "社会", color: "#ec4899" }, { name: "その他", color: "#64748b" }
+    ]);
+
+    const DEFAULT_DATA = Object.freeze({
+      goalMinutes: 120,
+      sessions: [],
+      tasks: [
+        { id: 1, title: "英単語を20個復習", done: false },
+        { id: 2, title: "数学の問題集を3ページ", done: false }
+      ]
+    });
+
+    const elements = {};
+    let data = loadData();
+    let selectedSubject = "数学";
+    let elapsedSeconds = 0;
+    let timerId = null;
+    let startedAt = 0;
+    let toastId = null;
+    let hiddenHintTapCount = 0;
+    let hiddenHintResetId = null;
+
+    document.addEventListener("DOMContentLoaded", initialize);
+
+    function initialize() {
+      [
+        "studyView", "privateView", "todayHero", "remainingTime", "progressBar", "progressText", "goalHero",
+        "progressRing", "todayStat", "weekStat", "taskStat", "subjectGrid", "timerSubject", "timerDisplay",
+        "timerToggle", "timerReset", "timerSave", "weekChart", "subjectSummary", "completedBadge", "taskForm",
+        "taskInput", "taskList", "goalRange", "goalValue", "adminOpenButton", "adminModal", "adminCloseButton",
+        "adminForm", "adminPassword", "adminError", "adminSubmit", "privateBackButton", "toast",
+        "manualForm", "manualDate", "manualSubject", "manualMinutes", "historyList", "exportButton",
+        "importButton", "importFile", "clearButton", "hiddenHintTrigger", "hiddenHintOverlay", "hiddenHintClose"
+      ].forEach((id) => { elements[id] = document.getElementById(id); });
+
+      renderSubjects();
+      renderManualSubjects();
+      restoreTimer();
+      elements.manualDate.value = localDateKey();
+      bindEvents();
+      renderAll();
+    }
+
+    function bindEvents() {
+      elements.timerToggle.addEventListener("click", toggleTimer);
+      elements.timerReset.addEventListener("click", resetTimer);
+      elements.timerSave.addEventListener("click", saveSession);
+      elements.taskForm.addEventListener("submit", addTask);
+      elements.goalRange.addEventListener("input", updateGoal);
+      elements.adminOpenButton.addEventListener("click", openAdminModal);
+      elements.adminCloseButton.addEventListener("click", closeAdminModal);
+      elements.adminForm.addEventListener("submit", unlockAdmin);
+      elements.privateBackButton.addEventListener("click", returnToStudy);
+      elements.manualForm.addEventListener("submit", addManualSession);
+      elements.exportButton.addEventListener("click", exportData);
+      elements.importButton.addEventListener("click", () => elements.importFile.click());
+      elements.importFile.addEventListener("change", importData);
+      elements.clearButton.addEventListener("click", clearAllData);
+      elements.hiddenHintTrigger.addEventListener("click", handleHiddenHintTap);
+      elements.hiddenHintClose.addEventListener("click", closeHiddenHint);
+      elements.adminModal.addEventListener("click", (event) => {
+        if (event.target === elements.adminModal) closeAdminModal();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !elements.adminModal.hidden && elements.hiddenHintOverlay.hidden) {
+          closeAdminModal();
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && timerId !== null) syncTimer();
+      });
+      document.querySelectorAll(".mobile-nav [data-target]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = document.getElementById(button.dataset.target);
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+    }
+
+    function loadData() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CONFIG.storageKey));
+        if (!parsed || !Array.isArray(parsed.sessions) || !Array.isArray(parsed.tasks)) throw new Error("invalid data");
+        return {
+          goalMinutes: clamp(Number(parsed.goalMinutes) || 120, 15, 360),
+          sessions: parsed.sessions.filter(isValidSession),
+          tasks: parsed.tasks.filter(isValidTask)
+        };
+      } catch (error) {
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify(data));
+      } catch (error) {
+        showToast("保存領域を利用できませんでした");
+      }
+    }
+
+    function isValidSession(item) {
+      return item && typeof item.date === "string" && typeof item.subject === "string" && Number.isFinite(Number(item.minutes));
+    }
+
+    function isValidTask(item) {
+      return item && typeof item.title === "string" && typeof item.done === "boolean";
+    }
+
+    function localDateKey(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDuration(minutes) {
+      const rounded = Math.max(0, Math.round(Number(minutes) || 0));
+      const hours = Math.floor(rounded / 60);
+      const rest = rounded % 60;
+      if (hours === 0) return `${rest}分`;
+      return rest ? `${hours}時間 ${rest}分` : `${hours}時間`;
+    }
+
+    function formatClock(seconds) {
+      const safe = Math.max(0, Math.floor(seconds));
+      const hours = Math.floor(safe / 3600);
+      const minutes = Math.floor((safe % 3600) / 60);
+      const rest = safe % 60;
+      return [hours, minutes, rest].map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    function getLast7Days() {
+      return Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setHours(12, 0, 0, 0);
+        date.setDate(date.getDate() - (6 - index));
+        return { key: localDateKey(date), label: `${date.getMonth() + 1}/${date.getDate()}` };
+      });
+    }
+
+    function getMinutesForDate(dateKey) {
+      return data.sessions.filter((item) => item.date === dateKey).reduce((sum, item) => sum + Number(item.minutes), 0);
+    }
+
+    function getTodayMinutes() { return getMinutesForDate(localDateKey()); }
+
+    function renderAll() {
+      renderSummary();
+      renderWeekChart();
+      renderSubjectSummary();
+      renderTasks();
+      renderHistory();
+      renderGoal();
+      renderTimer();
+    }
+
+    function renderSummary() {
+      const todayMinutes = getTodayMinutes();
+      const weeklyMinutes = getLast7Days().reduce((sum, day) => sum + getMinutesForDate(day.key), 0);
+      const completed = data.tasks.filter((task) => task.done).length;
+      const progress = clamp(Math.round((todayMinutes / Math.max(1, data.goalMinutes)) * 100), 0, 100);
+      const remaining = Math.max(0, data.goalMinutes - todayMinutes);
+
+      elements.todayHero.textContent = formatDuration(todayMinutes);
+      elements.todayStat.textContent = formatDuration(todayMinutes);
+      elements.weekStat.textContent = formatDuration(weeklyMinutes);
+      elements.taskStat.textContent = `${completed} / ${data.tasks.length}`;
+      elements.remainingTime.textContent = formatDuration(remaining);
+      elements.goalHero.textContent = formatDuration(data.goalMinutes);
+      elements.progressText.textContent = `${progress}% 達成`;
+      elements.progressRing.textContent = `${progress}%`;
+      elements.progressBar.style.width = `${progress}%`;
+      elements.progressBar.parentElement.setAttribute("aria-valuenow", String(progress));
+    }
+
+    function renderSubjects() {
+      elements.subjectGrid.replaceChildren();
+      SUBJECTS.forEach((subject) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `subject-button${subject.name === selectedSubject ? " active" : ""}`;
+        button.textContent = subject.name;
+        button.addEventListener("click", () => {
+          selectedSubject = subject.name;
+          renderSubjects();
+          renderTimer();
+        });
+        elements.subjectGrid.append(button);
+      });
+    }
+
+    function toggleTimer() {
+      if (timerId === null) {
+        startedAt = Date.now() - elapsedSeconds * 1000;
+        timerId = window.setInterval(syncTimer, 250);
+        persistTimer();
+      } else {
+        syncTimer();
+        window.clearInterval(timerId);
+        timerId = null;
+        persistTimer();
+      }
+      renderTimer();
+    }
+
+    function persistTimer() {
+      try {
+        localStorage.setItem(CONFIG.timerKey, JSON.stringify({ selectedSubject, elapsedSeconds, startedAt, running: timerId !== null }));
+      } catch (error) {}
+    }
+
+    function restoreTimer() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CONFIG.timerKey));
+        if (!saved || !SUBJECTS.some((item) => item.name === saved.selectedSubject)) return;
+        selectedSubject = saved.selectedSubject;
+        elapsedSeconds = Math.max(0, Number(saved.elapsedSeconds) || 0);
+        if (saved.running && Number.isFinite(Number(saved.startedAt))) {
+          startedAt = Number(saved.startedAt);
+          elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+          timerId = window.setInterval(syncTimer, 250);
+        }
+        renderSubjects();
+      } catch (error) {}
+    }
+
+    function syncTimer() {
+      if (timerId === null) return;
+      elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+      persistTimer();
+      renderTimer();
+    }
+
+    function resetTimer() {
+      if (timerId !== null) window.clearInterval(timerId);
+      timerId = null;
+      elapsedSeconds = 0;
+      persistTimer();
+      renderTimer();
+    }
+
+    function renderTimer() {
+      elements.timerSubject.textContent = selectedSubject;
+      elements.timerDisplay.textContent = formatClock(elapsedSeconds);
+      elements.timerToggle.textContent = timerId !== null ? "Ⅱ 一時停止" : elapsedSeconds > 0 ? "▶ 再開" : "▶ スタート";
+      elements.timerToggle.style.background = timerId !== null ? "var(--orange)" : "var(--primary)";
+    }
+
+    function saveSession() {
+      if (elapsedSeconds < 10) {
+        showToast("10秒以上勉強してから記録できます");
+        return;
+      }
+      const minutes = elapsedSeconds / 60;
+      data.sessions.push({
+        id: createId(), date: localDateKey(), subject: selectedSubject,
+        minutes, createdAt: new Date().toISOString()
+      });
+      resetTimer();
+      saveData();
+      renderAll();
+      showToast(`${selectedSubject}を${formatDuration(minutes)}記録しました`);
+    }
+
+    function renderWeekChart() {
+      const records = getLast7Days().map((day) => ({ ...day, minutes: getMinutesForDate(day.key) }));
+      const max = Math.max(30, ...records.map((item) => item.minutes));
+      elements.weekChart.replaceChildren();
+      records.forEach((record) => {
+        const item = document.createElement("div");
+        item.className = "bar-item";
+        const box = document.createElement("div");
+        box.className = "bar-box";
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = `${Math.max(2, (record.minutes / max) * 100)}%`;
+        bar.dataset.value = formatDuration(record.minutes);
+        bar.title = `${record.label}: ${formatDuration(record.minutes)}`;
+        const label = document.createElement("span");
+        label.textContent = record.label;
+        box.append(bar);
+        item.append(box, label);
+        elements.weekChart.append(item);
+      });
+    }
+
+    function renderSubjectSummary() {
+      const today = localDateKey();
+      elements.subjectSummary.replaceChildren();
+      SUBJECTS.forEach((subject) => {
+        const minutes = data.sessions
+          .filter((item) => item.date === today && item.subject === subject.name)
+          .reduce((sum, item) => sum + Number(item.minutes), 0);
+        const row = document.createElement("div");
+        row.className = "task";
+        const dot = document.createElement("span");
+        dot.style.cssText = `width:12px;height:12px;border-radius:50%;background:${subject.color};flex:none`;
+        const name = document.createElement("span");
+        name.className = "task-title";
+        name.textContent = subject.name;
+        const value = document.createElement("strong");
+        value.textContent = formatDuration(minutes);
+        row.append(dot, name, value);
+        elements.subjectSummary.append(row);
+      });
+    }
+
+    function renderManualSubjects() {
+      elements.manualSubject.replaceChildren();
+      SUBJECTS.forEach((subject) => {
+        const option = document.createElement("option");
+        option.value = subject.name;
+        option.textContent = subject.name;
+        elements.manualSubject.append(option);
+      });
+    }
+
+    function addManualSession(event) {
+      event.preventDefault();
+      const date = elements.manualDate.value;
+      const subject = elements.manualSubject.value;
+      const minutes = Number(elements.manualMinutes.value);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !SUBJECTS.some((item) => item.name === subject) || !Number.isFinite(minutes) || minutes < 1 || minutes > 1440) {
+        showToast("日付・科目・時間を確認してください");
+        return;
+      }
+      data.sessions.push({ id: createId(), date, subject, minutes, createdAt: new Date().toISOString() });
+      saveData();
+      renderAll();
+      showToast(`${subject}を${formatDuration(minutes)}追加しました`);
+    }
+
+    function renderHistory() {
+      elements.historyList.replaceChildren();
+      const sessions = [...data.sessions].sort((a, b) => String(b.createdAt || b.date).localeCompare(String(a.createdAt || a.date))).slice(0, 50);
+      if (sessions.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "学習記録はまだありません";
+        elements.historyList.append(empty);
+        return;
+      }
+      sessions.forEach((session) => {
+        const row = document.createElement("div");
+        row.className = "history-row";
+        const date = document.createElement("span"); date.className = "history-date"; date.textContent = session.date;
+        const subject = document.createElement("span"); subject.className = "history-subject"; subject.textContent = session.subject;
+        const duration = document.createElement("span"); duration.className = "history-duration"; duration.textContent = formatDuration(session.minutes);
+        const remove = document.createElement("button"); remove.type = "button"; remove.className = "delete"; remove.textContent = "🗑"; remove.setAttribute("aria-label", "学習記録を削除");
+        remove.addEventListener("click", () => {
+          if (!window.confirm(`${session.date}の${session.subject} ${formatDuration(session.minutes)}を削除しますか？`)) return;
+          data.sessions = data.sessions.filter((item) => item.id !== session.id);
+          saveData(); renderAll(); showToast("学習記録を削除しました");
+        });
+        row.append(date, subject, duration, remove);
+        elements.historyList.append(row);
+      });
+    }
+
+    function exportData() {
+      const payload = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `study-focus-backup-${localDateKey()}.json`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      showToast("バックアップを保存しました");
+    }
+
+    async function importData(event) {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      try {
+        const payload = JSON.parse(await file.text());
+        const incoming = payload && payload.data;
+        if (!incoming || !Array.isArray(incoming.sessions) || !Array.isArray(incoming.tasks)) throw new Error("invalid");
+        const next = {
+          goalMinutes: clamp(Number(incoming.goalMinutes) || 120, 15, 360),
+          sessions: incoming.sessions.filter(isValidSession),
+          tasks: incoming.tasks.filter(isValidTask)
+        };
+        if (!window.confirm("現在のデータをバックアップ内容で置き換えますか？")) return;
+        data = next; saveData(); renderAll(); showToast("バックアップを読み込みました");
+      } catch (error) { showToast("読み込めないバックアップです"); }
+    }
+
+    function clearAllData() {
+      if (!window.confirm("学習記録と課題をすべて初期化しますか？この操作は元に戻せません")) return;
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      resetTimer(); saveData(); renderAll(); showToast("データを初期化しました");
+    }
+
+    function addTask(event) {
+      event.preventDefault();
+      const title = elements.taskInput.value.trim();
+      if (!title) return;
+      data.tasks.push({ id: createId(), title, done: false });
+      elements.taskInput.value = "";
+      saveData();
+      renderTasks();
+      renderSummary();
+    }
+
+    function renderTasks() {
+      const completed = data.tasks.filter((task) => task.done).length;
+      elements.completedBadge.textContent = `${completed} 完了`;
+      elements.taskList.replaceChildren();
+
+      if (data.tasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "課題はまだありません";
+        elements.taskList.append(empty);
+        return;
+      }
+
+      data.tasks.forEach((task) => {
+        const row = document.createElement("div");
+        row.className = `task${task.done ? " done" : ""}`;
+        const check = document.createElement("button");
+        check.type = "button";
+        check.className = "check";
+        check.textContent = "✓";
+        check.setAttribute("aria-label", task.done ? "未完了に戻す" : "完了にする");
+        check.addEventListener("click", () => {
+          task.done = !task.done;
+          saveData();
+          renderTasks();
+          renderSummary();
+        });
+        const title = document.createElement("span");
+        title.className = "task-title";
+        title.textContent = task.title;
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "delete";
+        remove.textContent = "🗑";
+        remove.setAttribute("aria-label", "課題を削除");
+        remove.addEventListener("click", () => {
+          data.tasks = data.tasks.filter((item) => item.id !== task.id);
+          saveData();
+          renderTasks();
+          renderSummary();
+        });
+        row.append(check, title, remove);
+        elements.taskList.append(row);
+      });
+    }
+
+    function updateGoal() {
+      data.goalMinutes = clamp(Number(elements.goalRange.value), 15, 360);
+      saveData();
+      renderGoal();
+      renderSummary();
+    }
+
+    function renderGoal() {
+      elements.goalRange.value = String(data.goalMinutes);
+      elements.goalValue.textContent = formatDuration(data.goalMinutes);
+    }
+
+    function openAdminModal() {
+      elements.adminModal.hidden = false;
+      elements.adminError.textContent = "";
+      elements.adminPassword.value = "";
+      window.setTimeout(() => elements.adminPassword.focus(), 0);
+    }
+
+    function closeAdminModal() {
+      elements.adminModal.hidden = true;
+      elements.adminError.textContent = "";
+      elements.adminPassword.value = "";
+      elements.adminOpenButton.focus();
+    }
+
+    function getTodayAdminCode(date = new Date()) {
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${month}${day}`;
+    }
+
+    async function unlockAdmin(event) {
+      event.preventDefault();
+      elements.adminSubmit.disabled = true;
+      elements.adminSubmit.textContent = "確認中...";
+      elements.adminError.textContent = "";
+      try {
+        const enteredCode = elements.adminPassword.value.trim();
+        const expectedCode = getTodayAdminCode();
+        if (!/^\d{4}$/.test(enteredCode) || enteredCode !== expectedCode) {
+          elements.adminError.textContent = "パスワードが違います";
+          elements.adminPassword.select();
+          return;
+        }
+        closeAdminModal();
+        if (CONFIG.destinationUrl) {
+          window.location.assign(CONFIG.destinationUrl);
+        } else {
+          elements.studyView.hidden = true;
+          elements.privateView.hidden = false;
+          document.title = "専用ページ";
+        }
+      } catch (error) {
+        elements.adminError.textContent = "このブラウザでは認証処理を利用できません";
+      } finally {
+        elements.adminSubmit.disabled = false;
+        elements.adminSubmit.textContent = "専用ページへ進む";
+      }
+    }
+
+    function returnToStudy() {
+      elements.privateView.hidden = true;
+      elements.studyView.hidden = false;
+      document.title = "Study Focus";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function createId() {
+      return window.crypto && typeof window.crypto.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function openHiddenHint() {
+      elements.hiddenHintOverlay.hidden = false;
+      requestAnimationFrame(() => elements.hiddenHintOverlay.classList.add("show"));
+    }
+    function closeHiddenHint() {
+      elements.hiddenHintOverlay.classList.remove("show");
+      window.setTimeout(() => { elements.hiddenHintOverlay.hidden = true; }, 220);
+    }
+    function handleHiddenHintTap() {
+      hiddenHintTapCount += 1;
+      window.clearTimeout(hiddenHintResetId);
+
+      if (hiddenHintTapCount >= 7) {
+        hiddenHintTapCount = 0;
+        openHiddenHint();
+        return;
+      }
+
+      hiddenHintResetId = window.setTimeout(() => {
+        hiddenHintTapCount = 0;
+      }, 4000);
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("show");
+      window.clearTimeout(toastId);
+      toastId = window.setTimeout(() => elements.toast.classList.remove("show"), 2300);
+    }
+
+    function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+  </script>
+</body>
+</html>
